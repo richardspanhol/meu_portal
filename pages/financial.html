@@ -6,41 +6,92 @@
     <title>Financeiro - Meu Portal</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="dashboard-container">
-        <nav class="sidebar">
-            <h2>Meu Portal</h2>
-            <ul>
-                <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="players.html">Jogadores</a></li>
-                <li><a href="match-report.html">Súmula</a></li>
-                <li><a href="financial.html" class="active">Financeiro</a></li>
-            </ul>
-        </nav>
-        <main class="content">
-            <div class="header-actions">
-                <h1>Financeiro</h1>
-                <button class="btn-primary" onclick="openAddTransactionModal()">Nova Transação</button>
-            </div>
+    <nav class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="menu-items">
+            <a href="dashboard.html" class="menu-item">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="players.html" class="menu-item">
+                <i class="fas fa-users"></i>
+                <span>Jogadores</span>
+            </a>
+            <a href="match-report.html" class="menu-item">
+                <i class="fas fa-clipboard"></i>
+                <span>Súmula</span>
+            </a>
+            <a href="financial.html" class="menu-item active">
+                <i class="fas fa-dollar-sign"></i>
+                <span>Financeiro</span>
+            </a>
+            <a href="settings.html" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span>Configurações</span>
+            </a>
+        </div>
+    </nav>
 
-            <div class="financial-summary">
-                <div class="card">
-                    <h3>Saldo Atual</h3>
-                    <p id="currentBalance">R$ 0,00</p>
+    <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Sair</span>
+    </button>
+
+    <main class="main-content" id="mainContent">
+        <div class="header-actions">
+            <h1>Financeiro</h1>
+            <button class="btn-primary" onclick="openAddTransactionModal()">
+                <i class="fas fa-plus"></i>
+                Nova Transação
+            </button>
+        </div>
+
+        <div class="financial-summary">
+            <div class="summary-card income">
+                <i class="fas fa-arrow-up"></i>
+                <div class="summary-info">
+                    <span>Receitas</span>
+                    <h3 id="totalIncome">R$ 0,00</h3>
                 </div>
-                <div class="card">
-                    <h3>Receitas do Mês</h3>
-                    <p id="monthlyIncome">R$ 0,00</p>
+            </div>
+            <div class="summary-card expense">
+                <i class="fas fa-arrow-down"></i>
+                <div class="summary-info">
+                    <span>Despesas</span>
+                    <h3 id="totalExpense">R$ 0,00</h3>
                 </div>
-                <div class="card">
-                    <h3>Despesas do Mês</h3>
-                    <p id="monthlyExpenses">R$ 0,00</p>
+            </div>
+            <div class="summary-card balance">
+                <i class="fas fa-wallet"></i>
+                <div class="summary-info">
+                    <span>Saldo</span>
+                    <h3 id="balance">R$ 0,00</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="transactions-container">
+            <div class="transactions-header">
+                <h2>Histórico de Transações</h2>
+                <div class="transactions-filter">
+                    <select id="monthFilter">
+                        <option value="">Todos os meses</option>
+                        <!-- Meses serão adicionados via JavaScript -->
+                    </select>
+                    <select id="typeFilter">
+                        <option value="">Todos os tipos</option>
+                        <option value="income">Receitas</option>
+                        <option value="expense">Despesas</option>
+                    </select>
                 </div>
             </div>
 
             <div class="transactions-list">
-                <h2>Histórico de Transações</h2>
                 <table>
                     <thead>
                         <tr>
@@ -48,43 +99,49 @@
                             <th>Descrição</th>
                             <th>Tipo</th>
                             <th>Valor</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="transactionsList">
-                        <!-- Transações serão preenchidas via JavaScript -->
+                        <!-- Transações serão adicionadas via JavaScript -->
                     </tbody>
                 </table>
             </div>
+        </div>
 
-            <!-- Modal Nova Transação -->
-            <div id="addTransactionModal" class="modal">
-                <div class="modal-content">
-                    <h2>Nova Transação</h2>
-                    <form id="addTransactionForm">
-                        <div class="form-group">
-                            <input type="text" id="description" placeholder="Descrição" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="number" id="amount" placeholder="Valor" step="0.01" required>
-                        </div>
-                        <div class="form-group">
-                            <select id="type" required>
-                                <option value="income">Receita</option>
-                                <option value="expense">Despesa</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="date" id="date" required>
-                        </div>
-                        <div class="form-actions">
-                            <button type="button" onclick="closeAddTransactionModal()" class="btn-secondary">Cancelar</button>
-                            <button type="submit" class="btn-primary">Salvar</button>
-                        </div>
-                    </form>
-                </div>
+        <!-- Modal Adicionar Transação -->
+        <div id="addTransactionModal" class="modal">
+            <div class="modal-content">
+                <h2>Nova Transação</h2>
+                <form id="addTransactionForm">
+                    <div class="form-group">
+                        <input type="text" id="description" placeholder="Descrição" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="amount" placeholder="Valor" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <select id="type" required>
+                            <option value="income">Receita</option>
+                            <option value="expense">Despesa</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" onclick="closeAddTransactionModal()" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Salvar</button>
+                    </div>
+                </form>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="../js/financial.js"></script>
 </body>
 </html>

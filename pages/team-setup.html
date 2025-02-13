@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração do Time - Meu Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-content">
+            <h1>Configure seu Time</h1>
+            <form id="teamSetupForm">
+                <div class="form-group">
+                    <label for="teamLogo" class="logo-upload">
+                        <div class="logo-preview" id="logoPreview">
+                            <i class="fas fa-camera"></i>
+                            <span>Adicionar logo do time</span>
+                        </div>
+                        <input type="file" id="teamLogo" accept="image/*" style="display: none">
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="teamName" placeholder="Nome do Time" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="presidentName" placeholder="Nome do Presidente/Diretor" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="tel" id="whatsapp" placeholder="WhatsApp (apenas números)" 
+                           pattern="[0-9]{11}" required>
+                </div>
+
+                <div class="form-group">
+                    <input type="text" id="homeField" placeholder="Endereço do Campo" required>
+                </div>
+
+                <div class="form-group">
+                    <select id="teamType" required>
+                        <option value="">Tipo de Futebol</option>
+                        <option value="futsal">Futsal</option>
+                        <option value="society">Society</option>
+                        <option value="campo">Campo</option>
+                    </select>
+                </div>
+
+                <div class="form-group colors-setup">
+                    <h3>Cores do Time</h3>
+                    <div class="color-inputs">
+                        <div>
+                            <label>Cor Principal</label>
+                            <input type="color" id="primaryColor">
+                        </div>
+                        <div>
+                            <label>Cor Secundária</label>
+                            <input type="color" id="secondaryColor">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Concluir Configuração</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/team-setup.js"></script>
+</body>
+</html> 

@@ -43,7 +43,6 @@ const firebaseConfig = {
   async function signInWithGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
-          // Forçar seleção de conta
           provider.setCustomParameters({
               prompt: 'select_account'
           });
@@ -61,12 +60,19 @@ const firebaseConfig = {
                   email: user.email,
                   photoURL: user.photoURL,
                   createdAt: new Date(),
-                  role: 'user'
+                  hasTeam: false,
+                  teamConfigured: false
               });
+              window.location.href = 'pages/team-setup.html';
+          } else {
+              // Verificar se precisa configurar time
+              const userData = userDoc.data();
+              if (!userData.teamConfigured) {
+                  window.location.href = 'pages/team-setup.html';
+              } else {
+                  window.location.href = 'pages/dashboard.html';
+              }
           }
-          
-          window.location.href = window.location.pathname.includes('index.html') ? 
-              'pages/dashboard.html' : '../pages/dashboard.html';
       } catch (error) {
           console.error('Erro no login com Google:', error);
           if (error.code === 'auth/operation-not-supported-in-this-environment') {
