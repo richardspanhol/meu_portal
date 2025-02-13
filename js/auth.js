@@ -50,11 +50,11 @@ const firebaseConfig = {
           const result = await auth.signInWithPopup(provider);
           const user = result.user;
           
-          // Verificar se é primeiro login
+          // Verificar se usuário já existe
           const userDoc = await db.collection('users').doc(user.uid).get();
           
           if (!userDoc.exists) {
-              // Criar documento do usuário
+              // Criar novo usuário
               await db.collection('users').doc(user.uid).set({
                   name: user.displayName,
                   email: user.email,
@@ -63,14 +63,14 @@ const firebaseConfig = {
                   hasTeam: false,
                   teamConfigured: false
               });
-              window.location.href = 'pages/team-setup.html';
+              window.location.href = '/MeuPortal/pages/team-setup.html';
           } else {
               // Verificar se precisa configurar time
               const userData = userDoc.data();
               if (!userData.teamConfigured) {
-                  window.location.href = 'pages/team-setup.html';
+                  window.location.href = '/MeuPortal/pages/team-setup.html';
               } else {
-                  window.location.href = 'pages/dashboard.html';
+                  window.location.href = '/MeuPortal/pages/dashboard.html';
               }
           }
       } catch (error) {
