@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financeiro - Meu Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <h2>Meu Portal</h2>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="players.html">Jogadores</a></li>
+                <li><a href="match-report.html">Súmula</a></li>
+                <li><a href="financial.html" class="active">Financeiro</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <div class="header-actions">
+                <h1>Financeiro</h1>
+                <button class="btn-primary" onclick="openAddTransactionModal()">Nova Transação</button>
+            </div>
+
+            <div class="financial-summary">
+                <div class="card">
+                    <h3>Saldo Atual</h3>
+                    <p id="currentBalance">R$ 0,00</p>
+                </div>
+                <div class="card">
+                    <h3>Receitas do Mês</h3>
+                    <p id="monthlyIncome">R$ 0,00</p>
+                </div>
+                <div class="card">
+                    <h3>Despesas do Mês</h3>
+                    <p id="monthlyExpenses">R$ 0,00</p>
+                </div>
+            </div>
+
+            <div class="transactions-list">
+                <h2>Histórico de Transações</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsList">
+                        <!-- Transações serão preenchidas via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Modal Nova Transação -->
+            <div id="addTransactionModal" class="modal">
+                <div class="modal-content">
+                    <h2>Nova Transação</h2>
+                    <form id="addTransactionForm">
+                        <div class="form-group">
+                            <input type="text" id="description" placeholder="Descrição" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" id="amount" placeholder="Valor" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <select id="type" required>
+                                <option value="income">Receita</option>
+                                <option value="expense">Despesa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="date" id="date" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" onclick="closeAddTransactionModal()" class="btn-secondary">Cancelar</button>
+                            <button type="submit" class="btn-primary">Salvar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/financial.js"></script>
+</body>
+</html>

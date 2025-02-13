@@ -1,0 +1,21 @@
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .login-container {
+        padding: 20px;
+    }
+
+    input, .btn-primary {
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .links {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}

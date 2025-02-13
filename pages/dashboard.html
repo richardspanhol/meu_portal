@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Meu Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <h2>Meu Portal</h2>
+            <ul>
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="players.html">Jogadores</a></li>
+                <li><a href="match-report.html">Súmula</a></li>
+                <li><a href="financial.html">Financeiro</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h1>Dashboard</h1>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3>Total de Jogadores</h3>
+                    <p id="totalPlayers">0</p>
+                </div>
+                <div class="card">
+                    <h3>Próxima Partida</h3>
+                    <p id="nextMatch">Nenhuma partida agendada</p>
+                </div>
+                <div class="card">
+                    <h3>Saldo em Caixa</h3>
+                    <p id="balance">R$ 0,00</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/app.js"></script>
+</body>
+</html>

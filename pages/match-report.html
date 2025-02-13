@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Súmula - Meu Portal</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <h2>Meu Portal</h2>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="players.html">Jogadores</a></li>
+                <li><a href="match-report.html" class="active">Súmula</a></li>
+                <li><a href="financial.html">Financeiro</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <h1>Súmula da Partida</h1>
+            
+            <div class="match-setup">
+                <form id="matchSetupForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Data da Partida</label>
+                            <input type="date" id="matchDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time Adversário</label>
+                            <input type="text" id="opponentTeam" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Jogadores Presentes</label>
+                        <div class="players-selection" id="playersSelection">
+                            <!-- Lista de checkboxes será preenchida via JavaScript -->
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Iniciar Partida</button>
+                </form>
+            </div>
+
+            <div class="match-events" id="matchEvents" style="display: none;">
+                <div class="scoreboard">
+                    <div class="team">
+                        <h3>Meu Time</h3>
+                        <span id="homeScore">0</span>
+                    </div>
+                    <div class="timer" id="matchTimer">00:00</div>
+                    <div class="team">
+                        <h3 id="awayTeamName">Adversário</h3>
+                        <span id="awayScore">0</span>
+                    </div>
+                </div>
+
+                <div class="events-buttons">
+                    <button onclick="registerGoal()">Gol</button>
+                    <button onclick="registerAssist()">Assistência</button>
+                    <button onclick="registerCard('yellow')">Cartão Amarelo</button>
+                    <button onclick="registerCard('red')">Cartão Vermelho</button>
+                    <button onclick="registerFoul()">Falta</button>
+                </div>
+
+                <div class="events-log" id="eventsLog">
+                    <!-- Eventos serão registrados aqui -->
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../js/match-report.js"></script>
+</body>
+</html>
