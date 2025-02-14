@@ -1,99 +1,77 @@
-// Configuração do Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyC27EDdAil79iq62sPEmijeibGgiMYFbGc",
-    authDomain: "meu-portal-eb44a.firebaseapp.com",
-    projectId: "meu-portal-eb44a",
-    storageBucket: "meu-portal-eb44a.firebasestorage.app",
-    messagingSenderId: "717097816319",
-    appId: "1:717097816319:web:fd6b184cf8b1ad46da3cca",
-    measurementId: "G-F08REPBSQC"
-  };
-  
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  
-  // Provedor do Google
-  const googleProvider = new firebase.auth.GoogleAuthProvider();
-  
-  // Referências aos elementos do DOM
-  const loginForm = document.getElementById('loginForm');
-  const emailInput = document.getElementById('email');
-  const passwordInput = document.getElementById('password');
-  const googleBtn = document.getElementById('googleLogin');
-  const registerLink = document.getElementById('register');
-  
-  // Login com Email/Senha
-  loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const email = emailInput.value;
-      const password = passwordInput.value;
-  
-      try {
-          const userCredential = await auth.signInWithEmailAndPassword(email, password);
-          window.location.href = 'pages/dashboard.html';
-      } catch (error) {
-          alert('Erro no login: ' + error.message);
-      }
-  });
-  
-  // Login com Google
-  async function signInWithGoogle() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      try {
-          provider.setCustomParameters({
-              prompt: 'select_account'
-          });
-          
-          const result = await auth.signInWithPopup(provider);
-          const user = result.user;
-          
-          // Verificar se usuário já existe
-          const userDoc = await db.collection('users').doc(user.uid).get();
-          
-          if (!userDoc.exists) {
-              // Criar novo usuário
-              await db.collection('users').doc(user.uid).set({
-                  name: user.displayName,
-                  email: user.email,
-                  photoURL: user.photoURL,
-                  createdAt: new Date(),
-                  hasTeam: false,
-                  teamConfigured: false
-              });
-              window.location.href = '/MeuPortal/pages/team-setup.html';
-          } else {
-              // Verificar se precisa configurar time
-              const userData = userDoc.data();
-              if (!userData.teamConfigured) {
-                  window.location.href = '/MeuPortal/pages/team-setup.html';
-              } else {
-                  window.location.href = '/MeuPortal/pages/dashboard.html';
-              }
-          }
-      } catch (error) {
-          console.error('Erro no login com Google:', error);
-          if (error.code === 'auth/operation-not-supported-in-this-environment') {
-              alert('Por favor, acesse através de um servidor web (http/https)');
-          } else {
-              alert('Erro ao fazer login com Google: ' + error.message);
-          }
-      }
-  }
-  
-  // Navegação para página de registro
-  registerLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.location.href = 'pages/register.html';
-  });
-  
-  // Verificar estado de autenticação
-  auth.onAuthStateChanged((user) => {
-      if (user && window.location.pathname.includes('index.html')) {
-          window.location.href = 'pages/dashboard.html';
-      } else if (!user && !window.location.pathname.includes('index.html')) {
-          window.location.href = '../index.html';
-      }
-  });
+// Sistema de autenticação
+class AuthSystem {
+    constructor() {
+        this.auth = firebase.auth();
+        this.db = firebase.firestore();
+    }
+
+    // Login com Google
+    async loginWithGoogle() {
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            const result = await this.auth.signInWithPopup(provider);
+            
+            if (result.user) {
+                await this.createTeamIfNotExists(result.user);
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Erro no login:', error);
+            throw error;
+        }
+    }
+
+    // Criar time se não existir
+    async createTeamIfNotExists(user) {
+        try {
+            const teamRef = this.db.collection('teams').doc(user.uid);
+            const doc = await teamRef.get();
+
+            if (!doc.exists) {
+                await teamRef.set({
+                    name: 'Meu Time',
+                    createdAt: new Date(),
+                    owner: user.uid,
+                    email: user.email,
+                    sport: 'futsal',
+                    logoUrl: null,
+                    settings: {
+                        emailNotifications: true,
+                        matchReminders: true,
+                        publicProfile: false
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Erro ao criar time:', error);
+            throw error;
+        }
+    }
+
+    // Verificar autenticação
+    onAuthStateChanged(callback) {
+        return this.auth.onAuthStateChanged(callback);
+    }
+
+    // Logout
+    async logout() {
+        try {
+            await this.auth.signOut();
+            return true;
+        } catch (error) {
+            console.error('Erro no logout:', error);
+            throw error;
+        }
+    }
+}
+
+// Exportar instância
+const authSystem = new AuthSystem();
+
+// Verificar estado de autenticação
+firebase.auth().onAuthStateChanged((user) => {
+    if (user && window.location.pathname.includes('index.html')) {
+        window.location.href = 'pages/dashboard.html';
+    }
+});

@@ -5,69 +5,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financeiro - Meu Portal</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <nav class="sidebar" id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
+    <!-- Menu lateral -->
+    <div class="sidebar" id="sidebar">
+        <div class="team-info">
+            <img id="teamLogo" src="../assets/default-team.png" alt="Logo do Time">
+            <h2 id="teamName">Carregando...</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="players.html"><i class="fas fa-users"></i>Jogadores</a></li>
+                <li><a href="match-report.html"><i class="fas fa-futbol"></i>Súmula</a></li>
+                <li class="active"><a href="financial.html"><i class="fas fa-dollar-sign"></i>Financeiro</a></li>
+                <li><a href="settings.html"><i class="fas fa-cog"></i>Configurações</a></li>
+                <li class="logout-item">
+                    <a href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>Sair
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+        <button class="toggle-menu" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
-        <div class="menu-items">
-            <a href="dashboard.html" class="menu-item">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="players.html" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span>Jogadores</span>
-            </a>
-            <a href="match-report.html" class="menu-item">
-                <i class="fas fa-clipboard"></i>
-                <span>Súmula</span>
-            </a>
-            <a href="financial.html" class="menu-item active">
-                <i class="fas fa-dollar-sign"></i>
-                <span>Financeiro</span>
-            </a>
-            <a href="settings.html" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span>Configurações</span>
-            </a>
-        </div>
-    </nav>
 
-    <button class="logout-btn" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Sair</span>
-    </button>
-
-    <main class="main-content" id="mainContent">
-        <div class="header-actions">
-            <h1>Financeiro</h1>
-            <button class="btn-primary" onclick="openAddTransactionModal()">
+        <!-- Cabeçalho -->
+        <div class="page-header">
+            <div class="header-title">
+                <h1>Financeiro</h1>
+                <p>Controle as finanças do seu time</p>
+            </div>
+            <button class="btn-primary" onclick="openTransactionModal()">
                 <i class="fas fa-plus"></i>
                 Nova Transação
             </button>
         </div>
 
+        <!-- Resumo financeiro -->
         <div class="financial-summary">
             <div class="summary-card income">
-                <i class="fas fa-arrow-up"></i>
+                <div class="summary-icon">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
                 <div class="summary-info">
                     <span>Receitas</span>
                     <h3 id="totalIncome">R$ 0,00</h3>
                 </div>
             </div>
+
             <div class="summary-card expense">
-                <i class="fas fa-arrow-down"></i>
+                <div class="summary-icon">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
                 <div class="summary-info">
                     <span>Despesas</span>
                     <h3 id="totalExpense">R$ 0,00</h3>
                 </div>
             </div>
+
             <div class="summary-card balance">
-                <i class="fas fa-wallet"></i>
+                <div class="summary-icon">
+                    <i class="fas fa-wallet"></i>
+                </div>
                 <div class="summary-info">
                     <span>Saldo</span>
                     <h3 id="balance">R$ 0,00</h3>
@@ -75,19 +81,25 @@
             </div>
         </div>
 
+        <!-- Lista de transações -->
         <div class="transactions-container">
             <div class="transactions-header">
                 <h2>Histórico de Transações</h2>
-                <div class="transactions-filter">
-                    <select id="monthFilter">
-                        <option value="">Todos os meses</option>
-                        <!-- Meses serão adicionados via JavaScript -->
-                    </select>
-                    <select id="typeFilter">
-                        <option value="">Todos os tipos</option>
-                        <option value="income">Receitas</option>
-                        <option value="expense">Despesas</option>
-                    </select>
+                <div class="transactions-filters">
+                    <div class="filter-group">
+                        <label><i class="fas fa-calendar"></i></label>
+                        <select id="monthFilter" onchange="filterTransactions()">
+                            <option value="">Todos os meses</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label><i class="fas fa-filter"></i></label>
+                        <select id="typeFilter" onchange="filterTransactions()">
+                            <option value="">Todos os tipos</option>
+                            <option value="income">Receitas</option>
+                            <option value="expense">Despesas</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -97,51 +109,80 @@
                         <tr>
                             <th>Data</th>
                             <th>Descrição</th>
-                            <th>Tipo</th>
+                            <th>Categoria</th>
                             <th>Valor</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="transactionsList">
-                        <!-- Transações serão adicionadas via JavaScript -->
+                        <!-- Transações serão inseridas aqui via JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Modal Adicionar Transação -->
-        <div id="addTransactionModal" class="modal">
+        <!-- Modal de transação -->
+        <div id="transactionModal" class="modal">
             <div class="modal-content">
-                <h2>Nova Transação</h2>
-                <form id="addTransactionForm">
-                    <div class="form-group">
-                        <input type="text" id="description" placeholder="Descrição" required>
+                <div class="modal-header">
+                    <h2 id="modalTitle">Nova Transação</h2>
+                    <button class="close-modal" onclick="closeTransactionModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form id="transactionForm" class="transaction-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-file-alt"></i> Descrição</label>
+                            <input type="text" id="description" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-dollar-sign"></i> Valor</label>
+                            <input type="number" id="amount" step="0.01" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <input type="number" id="amount" placeholder="Valor" step="0.01" required>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-tag"></i> Tipo</label>
+                            <select id="type" required onchange="updateCategories()">
+                                <option value="income">Receita</option>
+                                <option value="expense">Despesa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar"></i> Data</label>
+                            <input type="date" id="date" required>
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <select id="type" required>
-                            <option value="income">Receita</option>
-                            <option value="expense">Despesa</option>
+                        <label><i class="fas fa-folder"></i> Categoria</label>
+                        <select id="category" required>
+                            <!-- Categorias serão preenchidas via JavaScript -->
                         </select>
                     </div>
-                    <div class="form-group">
-                        <input type="date" id="date" required>
-                    </div>
+
                     <div class="form-actions">
-                        <button type="button" onclick="closeAddTransactionModal()" class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary">Salvar</button>
+                        <button type="button" class="btn-secondary" onclick="closeTransactionModal()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i>
+                            Salvar
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </main>
 
-    <!-- Firebase SDK -->
+    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="../js/config.js"></script>
     <script src="../js/financial.js"></script>
 </body>
 </html>

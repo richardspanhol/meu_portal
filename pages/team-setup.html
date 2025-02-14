@@ -3,71 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuração do Time - Meu Portal</title>
+    <title>Cadastro do Time - Meu Portal</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <div class="setup-container">
+    <div class="setup-page">
         <div class="setup-content">
-            <h1>Configure seu Time</h1>
-            <form id="teamSetupForm">
-                <div class="form-group">
-                    <label for="teamLogo" class="logo-upload">
-                        <div class="logo-preview" id="logoPreview">
-                            <i class="fas fa-camera"></i>
-                            <span>Adicionar logo do time</span>
-                        </div>
-                        <input type="file" id="teamLogo" accept="image/*" style="display: none">
-                    </label>
-                </div>
-                
-                <div class="form-group">
-                    <input type="text" id="teamName" placeholder="Nome do Time" required>
-                </div>
-
-                <div class="form-group">
-                    <input type="text" id="presidentName" placeholder="Nome do Presidente/Diretor" required>
-                </div>
-
-                <div class="form-group">
-                    <input type="tel" id="whatsapp" placeholder="WhatsApp (apenas números)" 
-                           pattern="[0-9]{11}" required>
-                </div>
-
-                <div class="form-group">
-                    <input type="text" id="homeField" placeholder="Endereço do Campo" required>
-                </div>
-
-                <div class="form-group">
-                    <select id="teamType" required>
-                        <option value="">Tipo de Futebol</option>
-                        <option value="futsal">Futsal</option>
-                        <option value="society">Society</option>
-                        <option value="campo">Campo</option>
-                    </select>
-                </div>
-
-                <div class="form-group colors-setup">
-                    <h3>Cores do Time</h3>
-                    <div class="color-inputs">
-                        <div>
-                            <label>Cor Principal</label>
-                            <input type="color" id="primaryColor">
-                        </div>
-                        <div>
-                            <label>Cor Secundária</label>
-                            <input type="color" id="secondaryColor">
+            <div class="setup-container">
+                <form id="teamSetupForm" class="setup-form">
+                    <div class="form-group logo-section">
+                        <div class="logo-upload">
+                            <div class="logo-container">
+                                <img id="logoPreview" src="../assets/default-team.png" alt="Logo do Time">
+                                <div class="logo-overlay">
+                                    <i class="fas fa-link"></i>
+                                </div>
+                            </div>
+                            <input type="file" id="logoInput" style="display: none;">
+                            <button type="button" class="upload-btn">
+                                <i class="fas fa-link"></i>
+                                Adicionar URL da logo
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                <button type="submit" class="btn-primary">Concluir Configuração</button>
-            </form>
+                    <div class="setup-header">
+                        <h1>Cadastre seu Time</h1>
+                        <p class="setup-text">Personalize as informações do seu time</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-shield-alt"></i>
+                            Nome do Time
+                        </label>
+                        <input type="text" id="teamName" required placeholder="Ex: Meu Time FC">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-user"></i>
+                            Nome do Responsável
+                        </label>
+                        <input type="text" id="managerName" required placeholder="Ex: João Silva">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-phone"></i>
+                            Telefone
+                        </label>
+                        <input type="tel" id="phone" required placeholder="Ex: (11) 98765-4321">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-map-marker-alt"></i>
+                            Endereço
+                        </label>
+                        <input type="text" id="address" required placeholder="Ex: Rua das Flores, 123">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-futbol"></i>
+                            Modalidade
+                        </label>
+                        <select id="sport" required>
+                            <option value="futsal">Futsal</option>
+                            <option value="society">Society</option>
+                            <option value="campo">Campo</option>
+                        </select>
+                    </div>
+
+                    <div class="team-colors">
+                        <h3>
+                            <i class="fas fa-palette"></i>
+                            Cores do Time
+                        </h3>
+                        <div class="color-inputs">
+                            <div class="color-group">
+                                <label>Cor Principal</label>
+                                <input type="color" id="primaryColor" required>
+                            </div>
+                            <div class="color-group">
+                                <label>Cor Secundária</label>
+                                <input type="color" id="secondaryColor" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-check"></i>
+                        Concluir Configuração
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="../js/config.js"></script>
     <script src="../js/team-setup.js"></script>
 </body>
 </html> 

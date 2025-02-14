@@ -1,110 +1,103 @@
-// Configuração do Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyC27EDdAil79iq62sPEmijeibGgiMYFbGc",
-    authDomain: "meu-portal-eb44a.firebaseapp.com",
-    projectId: "meu-portal-eb44a",
-    storageBucket: "meu-portal-eb44a.firebasestorage.app",
-    messagingSenderId: "717097816319",
-    appId: "1:717097816319:web:fd6b184cf8b1ad46da3cca",
-    measurementId: "G-F08REPBSQC"
+// Variáveis de controle
+let editingTransactionId = null;
+
+// Categorias predefinidas
+const categories = {
+    income: [
+        'Mensalidade',
+        'Patrocínio',
+        'Venda de Uniforme',
+        'Evento',
+        'Outros'
+    ],
+    expense: [
+        'Aluguel de Campo',
+        'Material Esportivo',
+        'Uniforme',
+        'Arbitragem',
+        'Transporte',
+        'Outros'
+    ]
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Controle do Sidebar
+// Controle do menu
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded');
+    sidebar.classList.toggle('active');
 }
 
-// Função de Logout
-async function logout() {
-    try {
-        await auth.signOut();
-        window.location.href = '../index.html';
-    } catch (error) {
-        console.error('Erro ao fazer logout:', error);
+// Sistema de gerenciamento financeiro
+class FinancialManager {
+    constructor() {
+        this.db = firebase.firestore();
+        this.currentUser = null;
+        this.editingTransactionId = null;
+        this.init();
     }
-}
 
-// Funções do Modal
-function openAddTransactionModal() {
-    document.getElementById('addTransactionModal').style.display = 'block';
-    document.getElementById('date').valueAsDate = new Date();
-}
+    async init() {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this.currentUser = user;
+                this.loadTeamData();
+                this.setupEventListeners();
+                this.loadTransactions();
+                this.updateFinancialSummary();
+                this.populateMonthFilter();
+            } else {
+                window.location.href = '../index.html';
+            }
+        });
+    }
 
-function closeAddTransactionModal() {
-    document.getElementById('addTransactionModal').style.display = 'none';
-    document.getElementById('addTransactionForm').reset();
-}
+    setupEventListeners() {
+        // Formulário de transação
+        document.getElementById('transactionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.saveTransaction();
+        });
 
-// Adicionar Transação
-document.getElementById('addTransactionForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const user = auth.currentUser;
-    if (!user) return;
+        // Filtros
+        document.getElementById('monthFilter').addEventListener('change', () => this.filterTransactions());
+        document.getElementById('typeFilter').addEventListener('change', () => this.filterTransactions());
 
-    try {
-        // Buscar ID do time do usuário
-        const teamSnapshot = await db.collection('teams')
-            .where('userId', '==', user.uid)
-            .limit(1)
-            .get();
+        // Atualizar categorias quando mudar o tipo
+        document.getElementById('type').addEventListener('change', () => this.updateCategories());
+    }
 
-        if (teamSnapshot.empty) {
-            alert('Time não encontrado');
-            return;
+    async loadTeamData() {
+        try {
+            const teamDoc = await this.db.collection('teams')
+                .doc(this.currentUser.uid)
+                .get();
+
+            if (teamDoc.exists) {
+                const data = teamDoc.data();
+                document.getElementById('teamName').textContent = data.name;
+                if (data.logoUrl) {
+                    document.getElementById('teamLogo').src = data.logoUrl;
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados do time:', error);
+            this.showAlert('Erro ao carregar dados do time', 'error');
         }
-
-        const teamId = teamSnapshot.docs[0].id;
-        const transactionData = {
-            description: document.getElementById('description').value,
-            amount: parseFloat(document.getElementById('amount').value),
-            type: document.getElementById('type').value,
-            date: document.getElementById('date').value,
-            teamId: teamId,
-            createdAt: new Date()
-        };
-
-        await db.collection('transactions').add(transactionData);
-        closeAddTransactionModal();
-        loadTransactions();
-        updateFinancialSummary();
-    } catch (error) {
-        console.error('Erro ao adicionar transação:', error);
-        alert('Erro ao salvar transação');
     }
-});
 
-// Carregar Transações
-async function loadTransactions() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-        const teamSnapshot = await db.collection('teams')
-            .where('userId', '==', user.uid)
-            .limit(1)
-            .get();
-
-        if (!teamSnapshot.empty) {
-            const teamId = teamSnapshot.docs[0].id;
+    async loadTransactions() {
+        try {
             const monthFilter = document.getElementById('monthFilter').value;
             const typeFilter = document.getElementById('typeFilter').value;
 
-            let query = db.collection('transactions')
-                .where('teamId', '==', teamId)
+            let query = this.db.collection('financial')
+                .where('teamId', '==', this.currentUser.uid)
                 .orderBy('date', 'desc');
 
             if (monthFilter) {
-                const startDate = new Date(monthFilter);
-                const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
-                query = query.where('date', '>=', startDate).where('date', '<=', endDate);
+                const startDate = new Date(monthFilter + '-01');
+                const endDate = new Date(monthFilter + '-31');
+                query = query.where('date', '>=', startDate)
+                           .where('date', '<=', endDate);
             }
 
             if (typeFilter) {
@@ -117,100 +110,221 @@ async function loadTransactions() {
 
             snapshot.forEach(doc => {
                 const transaction = doc.data();
-                const tr = createTransactionRow(transaction, doc.id);
-                transactionsList.appendChild(tr);
+                const row = this.createTransactionRow(transaction, doc.id);
+                transactionsList.appendChild(row);
             });
+
+        } catch (error) {
+            console.error('Erro ao carregar transações:', error);
+            this.showAlert('Erro ao carregar transações', 'error');
         }
-    } catch (error) {
-        console.error('Erro ao carregar transações:', error);
     }
-}
 
-// Atualizar Resumo Financeiro
-async function updateFinancialSummary() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-        const teamSnapshot = await db.collection('teams')
-            .where('userId', '==', user.uid)
-            .limit(1)
-            .get();
-
-        if (!teamSnapshot.empty) {
-            const teamId = teamSnapshot.docs[0].id;
-            const snapshot = await db.collection('transactions')
-                .where('teamId', '==', teamId)
+    async updateFinancialSummary() {
+        try {
+            const snapshot = await this.db.collection('financial')
+                .where('teamId', '==', this.currentUser.uid)
                 .get();
 
-            let totalIncome = 0;
-            let totalExpense = 0;
+            let income = 0;
+            let expense = 0;
 
             snapshot.forEach(doc => {
                 const transaction = doc.data();
                 if (transaction.type === 'income') {
-                    totalIncome += transaction.amount;
+                    income += transaction.amount;
                 } else {
-                    totalExpense += transaction.amount;
+                    expense += transaction.amount;
                 }
             });
 
-            document.getElementById('totalIncome').textContent = `R$ ${totalIncome.toFixed(2)}`;
-            document.getElementById('totalExpense').textContent = `R$ ${totalExpense.toFixed(2)}`;
-            document.getElementById('balance').textContent = `R$ ${(totalIncome - totalExpense).toFixed(2)}`;
+            const balance = income - expense;
+
+            document.getElementById('totalIncome').textContent = this.formatCurrency(income);
+            document.getElementById('totalExpense').textContent = this.formatCurrency(expense);
+            document.getElementById('balance').textContent = this.formatCurrency(balance);
+
+        } catch (error) {
+            console.error('Erro ao atualizar resumo:', error);
+            this.showAlert('Erro ao atualizar resumo financeiro', 'error');
+        }
+    }
+
+    async saveTransaction() {
+        try {
+            const transactionData = {
+                description: document.getElementById('description').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                type: document.getElementById('type').value,
+                category: document.getElementById('category').value,
+                date: document.getElementById('date').value,
+                teamId: this.currentUser.uid,
+                createdAt: new Date()
+            };
+
+            if (this.editingTransactionId) {
+                await this.db.collection('financial')
+                    .doc(this.editingTransactionId)
+                    .update(transactionData);
+                this.showAlert('Transação atualizada com sucesso!', 'success');
+            } else {
+                await this.db.collection('financial').add(transactionData);
+                this.showAlert('Transação adicionada com sucesso!', 'success');
+            }
+
+            this.closeModal();
+            this.loadTransactions();
+            this.updateFinancialSummary();
+
+        } catch (error) {
+            console.error('Erro ao salvar transação:', error);
+            this.showAlert('Erro ao salvar transação', 'error');
+        }
+    }
+
+    async deleteTransaction(id) {
+        if (confirm('Tem certeza que deseja excluir esta transação?')) {
+            try {
+                await this.db.collection('financial').doc(id).delete();
+                this.showAlert('Transação excluída com sucesso!', 'success');
+                this.loadTransactions();
+                this.updateFinancialSummary();
+            } catch (error) {
+                console.error('Erro ao excluir transação:', error);
+                this.showAlert('Erro ao excluir transação', 'error');
+            }
+        }
+    }
+
+    // Métodos auxiliares
+    createTransactionRow(transaction, id) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${this.formatDate(transaction.date)}</td>
+            <td>${transaction.description}</td>
+            <td>${transaction.category}</td>
+            <td class="transaction-amount ${transaction.type}">
+                ${this.formatCurrency(transaction.amount)}
+            </td>
+            <td class="transaction-actions">
+                <button onclick="financialManager.editTransaction('${id}')" class="btn-icon">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="financialManager.deleteTransaction('${id}')" class="btn-icon delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        return tr;
+    }
+
+    populateMonthFilter() {
+        const select = document.getElementById('monthFilter');
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth();
+
+        for (let i = 0; i < 12; i++) {
+            const date = new Date(currentYear, currentMonth - i, 1);
+            const value = date.toISOString().slice(0, 7);
+            const text = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = text;
+            select.appendChild(option);
+        }
+    }
+
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('pt-BR');
+    }
+
+    formatCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value);
+    }
+
+    showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        
+        document.body.appendChild(alertDiv);
+        setTimeout(() => alertDiv.remove(), 3000);
+    }
+}
+
+// Inicializar gerenciador
+const financialManager = new FinancialManager();
+
+// Funções do modal
+function openTransactionModal(transactionId = null) {
+    editingTransactionId = transactionId;
+    const modal = document.getElementById('transactionModal');
+    const title = document.getElementById('modalTitle');
+    
+    if (transactionId) {
+        title.textContent = 'Editar Transação';
+        loadTransactionData(transactionId);
+    } else {
+        title.textContent = 'Nova Transação';
+        document.getElementById('transactionForm').reset();
+        setDefaultDate();
+        updateCategories();
+    }
+    
+    modal.style.display = 'block';
+}
+
+function closeTransactionModal() {
+    document.getElementById('transactionModal').style.display = 'none';
+    document.getElementById('transactionForm').reset();
+    editingTransactionId = null;
+}
+
+// Configurar data padrão
+function setDefaultDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+}
+
+// Atualizar categorias baseado no tipo
+function updateCategories() {
+    const type = document.getElementById('type').value;
+    const categorySelect = document.getElementById('category');
+    const options = categories[type];
+    
+    categorySelect.innerHTML = '<option value="">Selecione a categoria</option>' +
+        options.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+}
+
+// Filtrar transações
+function filterTransactions() {
+    financialManager.loadTransactions();
+}
+
+async function loadTransactionData(id) {
+    try {
+        const doc = await firebase.firestore()
+            .collection('financial')
+            .doc(id)
+            .get();
+
+        if (doc.exists) {
+            const transaction = doc.data();
+            document.getElementById('description').value = transaction.description;
+            document.getElementById('amount').value = transaction.amount;
+            document.getElementById('type').value = transaction.type;
+            document.getElementById('date').value = transaction.date;
+            updateCategories();
+            document.getElementById('category').value = transaction.category;
         }
     } catch (error) {
-        console.error('Erro ao atualizar resumo:', error);
+        console.error('Erro ao carregar dados da transação:', error);
+        showAlert('Erro ao carregar dados da transação', 'error');
     }
 }
-
-// Criar linha da transação
-function createTransactionRow(transaction, id) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-        <td>${new Date(transaction.date).toLocaleDateString()}</td>
-        <td>${transaction.description}</td>
-        <td>${transaction.type === 'income' ? 'Receita' : 'Despesa'}</td>
-        <td class="${transaction.type === 'income' ? 'income' : 'expense'}">
-            R$ ${transaction.amount.toFixed(2)}
-        </td>
-        <td>
-            <button onclick="editTransaction('${id}')" class="btn-icon">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button onclick="deleteTransaction('${id}')" class="btn-icon delete">
-                <i class="fas fa-trash"></i>
-            </button>
-        </td>
-    `;
-    return tr;
-}
-
-// Inicializar filtros e carregar dados
-function initializeFilters() {
-    const monthFilter = document.getElementById('monthFilter');
-    const currentDate = new Date();
-    
-    for (let i = 0; i < 12; i++) {
-        const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-        const option = document.createElement('option');
-        option.value = date.toISOString().slice(0, 7);
-        option.textContent = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-        monthFilter.appendChild(option);
-    }
-
-    // Adicionar event listeners para os filtros
-    monthFilter.addEventListener('change', loadTransactions);
-    document.getElementById('typeFilter').addEventListener('change', loadTransactions);
-}
-
-// Verificar autenticação e inicializar
-auth.onAuthStateChanged((user) => {
-    if (!user) {
-        window.location.href = '../index.html';
-    } else {
-        initializeFilters();
-        loadTransactions();
-        updateFinancialSummary();
-    }
-});

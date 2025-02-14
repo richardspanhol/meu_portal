@@ -5,98 +5,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jogadores - Meu Portal</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <nav class="sidebar" id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
+    <div class="sidebar" id="sidebar">
+        <div class="team-info">
+            <img id="teamLogo" src="../assets/default-team.png" alt="Logo do Time">
+            <h2 id="teamName">Carregando...</h2>
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a href="dashboard.html">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="players.html">
+                        <i class="fas fa-users"></i>
+                        Jogadores
+                    </a>
+                </li>
+                <li>
+                    <a href="match-report.html">
+                        <i class="fas fa-futbol"></i>
+                        Súmula
+                    </a>
+                </li>
+                <li>
+                    <a href="financial.html">
+                        <i class="fas fa-dollar-sign"></i>
+                        Financeiro
+                    </a>
+                </li>
+                <li>
+                    <a href="settings.html">
+                        <i class="fas fa-cog"></i>
+                        Configurações
+                    </a>
+                </li>
+                <li class="logout-item">
+                    <a href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Sair
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <button class="toggle-menu" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
-        <div class="menu-items">
-            <a href="dashboard.html" class="menu-item">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="players.html" class="menu-item active">
-                <i class="fas fa-users"></i>
-                <span>Jogadores</span>
-            </a>
-            <a href="match-report.html" class="menu-item">
-                <i class="fas fa-clipboard"></i>
-                <span>Súmula</span>
-            </a>
-            <a href="financial.html" class="menu-item">
-                <i class="fas fa-dollar-sign"></i>
-                <span>Financeiro</span>
-            </a>
-            <a href="settings.html" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span>Configurações</span>
-            </a>
-        </div>
-    </nav>
 
-    <button class="logout-btn" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Sair</span>
-    </button>
-
-    <main class="main-content" id="mainContent">
-        <div class="header-actions">
-            <h1>Jogadores</h1>
-            <button class="btn-primary" onclick="openAddPlayerModal()">
+        <div class="page-header">
+            <div class="header-title">
+                <h1>Jogadores</h1>
+                <p>Gerencie o elenco do seu time</p>
+            </div>
+            <button class="btn-primary" onclick="openPlayerModal()">
                 <i class="fas fa-plus"></i>
                 Adicionar Jogador
             </button>
         </div>
-        
-        <div class="players-grid" id="playersList">
-            <!-- Lista de jogadores será preenchida via JavaScript -->
+
+        <div class="players-filters">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchPlayer" placeholder="Buscar jogador..." onkeyup="filterPlayers()">
+            </div>
+            <select id="positionFilter" onchange="filterPlayers()">
+                <option value="">Todas as posições</option>
+            </select>
         </div>
 
-        <!-- Modal Adicionar Jogador -->
-        <div id="addPlayerModal" class="modal">
+        <div class="players-grid" id="playersGrid">
+            <!-- Cards dos jogadores serão inseridos via JavaScript -->
+        </div>
+
+        <div id="playerModal" class="modal">
             <div class="modal-content">
-                <h2>Adicionar Jogador</h2>
-                <form id="addPlayerForm">
-                    <div class="form-group">
-                        <label for="playerPhoto" class="photo-upload">
-                            <div class="photo-preview" id="photoPreview">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Adicionar Jogador</h2>
+                    <button class="close-modal" onclick="closePlayerModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form id="playerForm" class="player-form">
+                    <div class="photo-upload-container">
+                        <label for="playerPhoto" class="photo-preview">
+                            <img id="photoPreview" src="../assets/default-player.png" alt="Foto do Jogador">
+                            <div class="photo-overlay">
                                 <i class="fas fa-camera"></i>
-                                <span>Adicionar foto</span>
+                                <span>Alterar foto</span>
                             </div>
-                            <input type="file" id="playerPhoto" accept="image/*" style="display: none">
                         </label>
+                        <input type="file" id="playerPhoto" accept="image/*" hidden>
                     </div>
-                    <div class="form-group">
-                        <input type="text" id="playerName" placeholder="Nome" required>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Nome</label>
+                            <input type="text" id="playerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-tshirt"></i> Número</label>
+                            <input type="number" id="playerNumber" min="0" max="99" required>
+                        </div>
                     </div>
+
                     <div class="form-group">
-                        <input type="number" id="playerNumber" placeholder="Número" required>
-                    </div>
-                    <div class="form-group">
+                        <label><i class="fas fa-running"></i> Posição</label>
                         <select id="playerPosition" required>
-                            <option value="">Selecione a Posição</option>
-                            <option value="goleiro">Goleiro</option>
-                            <option value="defensor">Defensor</option>
-                            <option value="meio-campo">Meio Campo</option>
-                            <option value="atacante">Atacante</option>
+                            <!-- Opções serão preenchidas via JavaScript -->
                         </select>
                     </div>
+
                     <div class="form-actions">
-                        <button type="button" onclick="closeAddPlayerModal()" class="btn-secondary">Cancelar</button>
-                        <button type="submit" class="btn-primary">Salvar</button>
+                        <button type="button" class="btn-secondary" onclick="closePlayerModal()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i>
+                            Salvar
+                        </button>
                     </div>
                 </form>
             </div>
         </div>
     </main>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="../js/config.js"></script>
     <script src="../js/players.js"></script>
 </body>
 </html>

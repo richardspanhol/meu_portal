@@ -5,73 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Meu Portal</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <nav class="sidebar" id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
+    <!-- Menu lateral -->
+    <div class="sidebar" id="sidebar">
+        <div class="team-info">
+            <img id="teamLogo" src="../assets/default-team.png" alt="Logo do Time">
+            <h2 id="teamName">Carregando...</h2>
+        </div>
+        <nav>
+            <ul>
+                <li class="active">
+                    <a href="dashboard.html">
+                        <i class="fas fa-home"></i>Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="players.html">
+                        <i class="fas fa-users"></i>Jogadores
+                    </a>
+                </li>
+                <li>
+                    <a href="match-report.html">
+                        <i class="fas fa-futbol"></i>Súmula
+                    </a>
+                </li>
+                <li>
+                    <a href="financial.html">
+                        <i class="fas fa-dollar-sign"></i>Financeiro
+                    </a>
+                </li>
+                <li>
+                    <a href="settings.html">
+                        <i class="fas fa-cog"></i>Configurações
+                    </a>
+                </li>
+                <li class="logout-item">
+                    <a href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>Sair
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+        <button class="toggle-menu" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
-        <div class="menu-items">
-            <a href="dashboard.html" class="menu-item active">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="players.html" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span>Jogadores</span>
-            </a>
-            <a href="match-report.html" class="menu-item">
-                <i class="fas fa-clipboard"></i>
-                <span>Súmula</span>
-            </a>
-            <a href="financial.html" class="menu-item">
-                <i class="fas fa-dollar-sign"></i>
-                <span>Financeiro</span>
-            </a>
-            <a href="settings.html" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span>Configurações</span>
-            </a>
-        </div>
-    </nav>
 
-    <button class="logout-btn" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Sair</span>
-    </button>
-
-    <main class="main-content" id="mainContent">
-        <div class="dashboard-header">
-            <h1>Dashboard</h1>
-            <div class="team-info" id="teamInfo">
-                <!-- Info do time será carregada via JavaScript -->
+        <!-- Cabeçalho -->
+        <div class="page-header">
+            <div class="header-title">
+                <h1>Dashboard</h1>
+                <p>Bem-vindo ao seu portal esportivo</p>
             </div>
         </div>
 
-        <div class="dashboard-grid">
-            <div class="dashboard-card">
-                <h3>Total de Jogadores</h3>
-                <div class="card-value" id="totalPlayers">0</div>
+        <!-- Cards de estatísticas -->
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon players-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Total de Jogadores</h3>
+                        <p id="totalPlayers">0</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="dashboard-card">
-                <h3>Próxima Partida</h3>
-                <div class="card-value" id="nextMatch">Nenhuma partida agendada</div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon matches-icon">
+                        <i class="fas fa-futbol"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Próxima Partida</h3>
+                        <p id="nextMatch">Nenhuma partida agendada</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="dashboard-card">
-                <h3>Saldo em Caixa</h3>
-                <div class="card-value" id="balance">R$ 0,00</div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon financial-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Saldo em Caixa</h3>
+                        <p id="balance">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas atividades -->
+        <div class="recent-activities">
+            <h2><i class="fas fa-clock"></i> Últimas Atividades</h2>
+            <div class="activities-list" id="activitiesList">
+                <!-- Atividades serão inseridas via JavaScript -->
             </div>
         </div>
     </main>
 
-    <!-- Firebase SDK -->
+    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="../js/config.js"></script>
     <script src="../js/dashboard.js"></script>
 </body>
 </html>

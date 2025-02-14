@@ -5,86 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Súmula - Meu Portal</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-    <nav class="sidebar" id="sidebar">
-        <button class="sidebar-toggle" onclick="toggleSidebar()">
+    <!-- Menu lateral -->
+    <div class="sidebar" id="sidebar">
+        <div class="team-info">
+            <img id="teamLogo" src="../assets/default-team.png" alt="Logo do Time">
+            <h2 id="teamName">Carregando...</h2>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html"><i class="fas fa-home"></i>Dashboard</a></li>
+                <li><a href="players.html"><i class="fas fa-users"></i>Jogadores</a></li>
+                <li class="active"><a href="match-report.html"><i class="fas fa-futbol"></i>Súmula</a></li>
+                <li><a href="financial.html"><i class="fas fa-dollar-sign"></i>Financeiro</a></li>
+                <li><a href="settings.html"><i class="fas fa-cog"></i>Configurações</a></li>
+                <li class="logout-item">
+                    <a href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>Sair
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+        <button class="toggle-menu" onclick="toggleSidebar()">
             <i class="fas fa-bars"></i>
         </button>
-        <div class="menu-items">
-            <a href="dashboard.html" class="menu-item">
-                <i class="fas fa-home"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="players.html" class="menu-item">
-                <i class="fas fa-users"></i>
-                <span>Jogadores</span>
-            </a>
-            <a href="match-report.html" class="menu-item active">
-                <i class="fas fa-clipboard"></i>
-                <span>Súmula</span>
-            </a>
-            <a href="financial.html" class="menu-item">
-                <i class="fas fa-dollar-sign"></i>
-                <span>Financeiro</span>
-            </a>
-            <a href="settings.html" class="menu-item">
-                <i class="fas fa-cog"></i>
-                <span>Configurações</span>
-            </a>
-        </div>
-    </nav>
 
-    <button class="logout-btn" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Sair</span>
-    </button>
-
-    <main class="main-content" id="mainContent">
-        <div class="header-actions">
-            <h1>Súmula da Partida</h1>
+        <!-- Cabeçalho -->
+        <div class="page-header">
+            <div class="header-title">
+                <h1>Súmula da Partida</h1>
+                <p>Registre os eventos da partida</p>
+            </div>
             <button class="btn-primary" onclick="openNewMatchModal()">
                 <i class="fas fa-plus"></i>
                 Nova Partida
             </button>
         </div>
 
-        <div class="match-container" id="matchContainer">
+        <!-- Container da partida -->
+        <div class="match-container">
+            <!-- Configuração inicial -->
             <div class="match-setup" id="matchSetup">
-                <form id="matchSetupForm">
-                    <div class="form-group">
-                        <input type="text" id="opponent" placeholder="Time Adversário" required>
+                <form id="matchSetupForm" class="setup-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-shield-alt"></i> Time Adversário</label>
+                            <input type="text" id="opponent" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-map-marker-alt"></i> Local</label>
+                            <input type="text" id="location" required>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <input type="text" id="location" placeholder="Local da Partida" required>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-calendar"></i> Data e Hora</label>
+                            <input type="datetime-local" id="matchDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-trophy"></i> Tipo</label>
+                            <select id="matchType" required>
+                                <option value="">Selecione o tipo</option>
+                                <option value="friendly">Amistoso</option>
+                                <option value="championship">Campeonato</option>
+                                <option value="cup">Copa</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <input type="datetime-local" id="matchDate" required>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-play"></i>
+                            Iniciar Partida
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <select id="matchType" required>
-                            <option value="">Tipo de Partida</option>
-                            <option value="friendly">Amistoso</option>
-                            <option value="championship">Campeonato</option>
-                            <option value="cup">Copa</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-primary">Iniciar Partida</button>
                 </form>
             </div>
 
+            <!-- Eventos da partida -->
             <div class="match-events" id="matchEvents" style="display: none;">
+                <!-- Placar e timer -->
                 <div class="match-header">
-                    <div class="match-timer" id="matchTimer">00:00</div>
-                    <div class="match-score">
-                        <span id="homeTeam">Meu Time</span>
-                        <span id="score">0 x 0</span>
-                        <span id="awayTeam">Adversário</span>
+                    <div class="match-info">
+                        <div class="match-timer" id="matchTimer">00:00</div>
+                        <div class="match-score">
+                            <span id="homeTeam">Meu Time</span>
+                            <span id="score">0 x 0</span>
+                            <span id="awayTeam">Adversário</span>
+                        </div>
+                    </div>
+                    <div class="match-controls">
+                        <button class="btn-control" onclick="toggleTimer()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="btn-control" onclick="resetTimer()">
+                            <i class="fas fa-undo"></i>
+                        </button>
                     </div>
                 </div>
 
+                <!-- Botões de eventos -->
                 <div class="events-buttons">
                     <button onclick="registerGoal()" class="event-btn">
                         <i class="fas fa-futbol"></i>
@@ -108,6 +135,7 @@
                     </button>
                 </div>
 
+                <!-- Log de eventos -->
                 <div class="events-log" id="eventsLog">
                     <!-- Eventos serão registrados aqui -->
                 </div>
@@ -115,10 +143,11 @@
         </div>
     </main>
 
-    <!-- Firebase SDK -->
+    <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="../js/config.js"></script>
     <script src="../js/match-report.js"></script>
 </body>
 </html>
