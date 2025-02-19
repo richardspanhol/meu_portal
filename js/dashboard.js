@@ -4,183 +4,217 @@ function toggleSidebar() {
     sidebar.classList.toggle('active');
 }
 
-// Carregar dados do time
-async function loadTeamData() {
-    try {
-        const user = firebase.auth().currentUser;
-        if (!user) return;
-
-        const teamDoc = await firebase.firestore()
-            .collection('teams')
-            .doc(user.uid)
-            .get();
-
-        if (teamDoc.exists) {
-            const data = teamDoc.data();
-            document.getElementById('teamName').textContent = data.name || 'Meu Time';
-            if (data.logoUrl) {
-                document.getElementById('teamLogo').src = data.logoUrl;
-            }
-        }
-    } catch (error) {
-        console.error('Erro ao carregar dados do time:', error);
-        showAlert('Erro ao carregar dados do time', 'error');
+// Sistema de Dashboard
+class DashboardManager {
+    constructor() {
+        this.db = firebase.firestore();
+        this.currentUser = null;
+        this.init();
     }
-}
 
-// Carregar estatísticas
-async function loadStats() {
-    try {
-        const user = firebase.auth().currentUser;
-        if (!user) return;
-
-        // Total de jogadores
-        const playersSnapshot = await firebase.firestore()
-            .collection('players')
-            .where('teamId', '==', user.uid)
-            .get();
-        
-        document.getElementById('totalPlayers').textContent = playersSnapshot.size;
-
-        // Próxima partida
-        const nextMatchSnapshot = await firebase.firestore()
-            .collection('matches')
-            .where('teamId', '==', user.uid)
-            .where('date', '>=', new Date())
-            .orderBy('date')
-            .limit(1)
-            .get();
-
-        if (!nextMatchSnapshot.empty) {
-            const match = nextMatchSnapshot.docs[0].data();
-            document.getElementById('nextMatch').textContent = formatNextMatch(match);
-        }
-
-        // Saldo em caixa
-        const financialSnapshot = await firebase.firestore()
-            .collection('financial')
-            .where('teamId', '==', user.uid)
-            .get();
-
-        let balance = 0;
-        financialSnapshot.forEach(doc => {
-            const transaction = doc.data();
-            if (transaction.type === 'income') {
-                balance += transaction.amount;
+    async init() {
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                this.currentUser = user;
+                this.loadTeamData();
+                this.loadStats();
+                this.loadRecentActivities();
             } else {
-                balance -= transaction.amount;
+                window.location.href = '../index.html';
             }
         });
-
-        document.getElementById('balance').textContent = formatCurrency(balance);
-
-    } catch (error) {
-        console.error('Erro ao carregar estatísticas:', error);
-        showAlert('Erro ao carregar estatísticas', 'error');
     }
-}
 
-// Carregar últimas atividades
-async function loadRecentActivities() {
-    try {
-        const user = firebase.auth().currentUser;
-        if (!user) return;
+    async loadTeamData() {
+        try {
+            const teamDoc = await this.db.collection('teams')
+                .doc(this.currentUser.uid)
+                .get();
 
-        const activitiesList = document.getElementById('activitiesList');
-        activitiesList.innerHTML = '';
+            if (teamDoc.exists) {
+                const data = teamDoc.data();
+                document.getElementById('teamName').textContent = data.name;
+                if (data.logoUrl) {
+                    document.getElementById('teamLogo').src = data.logoUrl;
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao carregar dados do time:', error);
+            this.showAlert('Erro ao carregar dados do time', 'error');
+        }
+    }
 
-        // Últimas partidas
-        const matchesSnapshot = await firebase.firestore()
-            .collection('matches')
-            .where('teamId', '==', user.uid)
-            .orderBy('date', 'desc')
-            .limit(5)
-            .get();
+    async loadStats() {
+        try {
+            // Total de jogadores
+            const playersSnapshot = await this.db.collection('players')
+                .where('teamId', '==', this.currentUser.uid)
+                .get();
+            
+            document.getElementById('totalPlayers').textContent = playersSnapshot.size;
 
-        // Últimas transações
-        const financialSnapshot = await firebase.firestore()
-            .collection('financial')
-            .where('teamId', '==', user.uid)
-            .orderBy('createdAt', 'desc')
-            .limit(5)
-            .get();
+            // Próxima partida
+            const now = new Date();
+            const matchesSnapshot = await this.db.collection('matches')
+                .where('teamId', '==', this.currentUser.uid)
+                .where('date', '>=', now)
+                .orderBy('date', 'asc')
+                .limit(1)
+                .get();
 
-        const activities = [];
+            if (!matchesSnapshot.empty) {
+                const match = matchesSnapshot.docs[0].data();
+                document.getElementById('nextMatch').textContent = this.formatNextMatch(match);
+            }
 
-        matchesSnapshot.forEach(doc => {
-            const match = doc.data();
-            activities.push({
-                type: 'match',
-                date: match.date,
-                data: match
+            // Saldo em caixa
+            const financialSnapshot = await this.db.collection('financial')
+                .where('teamId', '==', this.currentUser.uid)
+                .get();
+
+            let balance = 0;
+            financialSnapshot.forEach(doc => {
+                const transaction = doc.data();
+                balance += transaction.type === 'income' ? transaction.amount : -transaction.amount;
             });
-        });
 
-        financialSnapshot.forEach(doc => {
-            const transaction = doc.data();
-            activities.push({
-                type: 'transaction',
-                date: transaction.createdAt.toDate(),
-                data: transaction
+            document.getElementById('balance').textContent = this.formatCurrency(balance);
+
+        } catch (error) {
+            console.error('Erro ao carregar estatísticas:', error);
+            this.showAlert('Erro ao carregar estatísticas', 'error');
+        }
+    }
+
+    async loadRecentActivities() {
+        try {
+            const activities = [];
+            const now = new Date();
+
+            // Últimas partidas
+            const matchesSnapshot = await this.db.collection('matches')
+                .where('teamId', '==', this.currentUser.uid)
+                .limit(3)
+                .get();
+
+            matchesSnapshot.forEach(doc => {
+                const match = doc.data();
+                activities.push({
+                    type: 'match',
+                    date: this.parseDate(match.date),
+                    data: match
+                });
             });
-        });
 
-        // Ordenar por data
-        activities.sort((a, b) => b.date - a.date);
+            // Últimas transações
+            const financialSnapshot = await this.db.collection('financial')
+                .where('teamId', '==', this.currentUser.uid)
+                .limit(3)
+                .get();
 
-        // Criar elementos HTML
-        activities.slice(0, 5).forEach(activity => {
-            const activityElement = createActivityElement(activity);
-            activitiesList.appendChild(activityElement);
-        });
+            financialSnapshot.forEach(doc => {
+                const transaction = doc.data();
+                activities.push({
+                    type: 'transaction',
+                    date: this.parseDate(transaction.date),
+                    data: transaction
+                });
+            });
 
-    } catch (error) {
-        console.error('Erro ao carregar atividades:', error);
-        showAlert('Erro ao carregar atividades recentes', 'error');
+            // Ordenar por data
+            activities.sort((a, b) => b.date - a.date);
+
+            // Atualizar interface
+            const activitiesList = document.getElementById('activitiesList');
+            activitiesList.innerHTML = '';
+
+            if (activities.length === 0) {
+                activitiesList.innerHTML = '<p class="no-activities">Nenhuma atividade recente</p>';
+                return;
+            }
+
+            activities.forEach(activity => {
+                const element = this.createActivityElement(activity);
+                activitiesList.appendChild(element);
+            });
+
+        } catch (error) {
+            console.error('Erro ao carregar atividades:', error);
+            this.showAlert('Erro ao carregar atividades recentes', 'error');
+        }
+    }
+
+    // Método auxiliar para tratar datas
+    parseDate(date) {
+        if (!date) return new Date();
+        if (date instanceof firebase.firestore.Timestamp) {
+            return date.toDate();
+        }
+        if (typeof date === 'string') {
+            return new Date(date);
+        }
+        if (date instanceof Date) {
+            return date;
+        }
+        return new Date();
+    }
+
+    formatNextMatch(match) {
+        // Verificar se a data é um timestamp do Firestore
+        const date = match.date instanceof firebase.firestore.Timestamp 
+            ? match.date.toDate() 
+            : new Date(match.date);
+        return `${match.opponent} - ${date.toLocaleDateString('pt-BR')}`;
+    }
+
+    formatCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value);
+    }
+
+    createActivityElement(activity) {
+        const div = document.createElement('div');
+        div.className = 'activity-item';
+
+        if (activity.type === 'match') {
+            div.innerHTML = `
+                <div class="activity-icon match">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <div class="activity-info">
+                    <p>Partida contra ${activity.data.opponent}</p>
+                    <small>${activity.date.toLocaleDateString('pt-BR')}</small>
+                </div>
+            `;
+        } else {
+            div.innerHTML = `
+                <div class="activity-icon ${activity.data.type}">
+                    <i class="fas fa-${activity.data.type === 'income' ? 'arrow-up' : 'arrow-down'}"></i>
+                </div>
+                <div class="activity-info">
+                    <p>${activity.data.description}</p>
+                    <small>${this.formatCurrency(activity.data.amount)}</small>
+                </div>
+            `;
+        }
+
+        return div;
+    }
+
+    showAlert(message, type = 'info') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.textContent = message;
+        
+        document.body.appendChild(alertDiv);
+        setTimeout(() => alertDiv.remove(), 3000);
     }
 }
 
-// Funções auxiliares
-function formatNextMatch(match) {
-    const date = new Date(match.date);
-    return `${match.opponent} - ${date.toLocaleDateString('pt-BR')}`;
-}
-
-function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(value);
-}
-
-function createActivityElement(activity) {
-    const div = document.createElement('div');
-    div.className = 'activity-item';
-
-    if (activity.type === 'match') {
-        div.innerHTML = `
-            <div class="activity-icon match">
-                <i class="fas fa-futbol"></i>
-            </div>
-            <div class="activity-info">
-                <p>Partida contra ${activity.data.opponent}</p>
-                <small>${new Date(activity.date).toLocaleDateString('pt-BR')}</small>
-            </div>
-        `;
-    } else {
-        div.innerHTML = `
-            <div class="activity-icon ${activity.data.type}">
-                <i class="fas fa-${activity.data.type === 'income' ? 'arrow-up' : 'arrow-down'}"></i>
-            </div>
-            <div class="activity-info">
-                <p>${activity.data.description}</p>
-                <small>${formatCurrency(activity.data.amount)}</small>
-            </div>
-        `;
-    }
-
-    return div;
-}
+// Inicializar dashboard
+const dashboardManager = new DashboardManager();
 
 // Função de logout
 function logout() {
@@ -193,27 +227,6 @@ function logout() {
             showAlert('Erro ao fazer logout', 'error');
         });
 }
-
-// Função para mostrar alertas
-function showAlert(message, type = 'info') {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
-    alertDiv.textContent = message;
-    
-    document.body.appendChild(alertDiv);
-    setTimeout(() => alertDiv.remove(), 3000);
-}
-
-// Verificar autenticação e inicializar
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        loadTeamData();
-        loadStats();
-        loadRecentActivities();
-    } else {
-        window.location.href = '../index.html';
-    }
-});
 
 // Fechar menu ao clicar fora no mobile
 document.addEventListener('click', function(e) {

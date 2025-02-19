@@ -42,9 +42,8 @@
                 <h1>Financeiro</h1>
                 <p>Controle as finanças do seu time</p>
             </div>
-            <button class="btn-primary" onclick="openTransactionModal()">
-                <i class="fas fa-plus"></i>
-                Nova Transação
+            <button class="btn-primary" onclick="financialManager.openModal()">
+                <i class="fas fa-plus"></i> Nova Transação
             </button>
         </div>
 
@@ -85,17 +84,22 @@
         <div class="transactions-container">
             <div class="transactions-header">
                 <h2>Histórico de Transações</h2>
-                <div class="transactions-filters">
+                <div class="filters">
                     <div class="filter-group">
-                        <label><i class="fas fa-calendar"></i></label>
-                        <select id="monthFilter" onchange="filterTransactions()">
-                            <option value="">Todos os meses</option>
+                        <label for="monthFilter">Período</label>
+                        <select id="monthFilter">
+                            <option value="all">Todos os meses</option>
+                            <option value="24">Últimos 24 meses</option>
+                            <option value="12">Últimos 12 meses</option>
+                            <option value="6">Últimos 6 meses</option>
+                            <option value="3">Últimos 3 meses</option>
+                            <option value="1">Último mês</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label><i class="fas fa-filter"></i></label>
-                        <select id="typeFilter" onchange="filterTransactions()">
-                            <option value="">Todos os tipos</option>
+                        <label for="typeFilter">Tipo</label>
+                        <select id="typeFilter">
+                            <option value="all">Todos os tipos</option>
                             <option value="income">Receitas</option>
                             <option value="expense">Despesas</option>
                         </select>
@@ -126,12 +130,29 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 id="modalTitle">Nova Transação</h2>
-                    <button class="close-modal" onclick="closeTransactionModal()">
+                    <button class="close-modal" onclick="financialManager.closeModal()">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
                 <form id="transactionForm" class="transaction-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="type">Tipo</label>
+                            <select id="type" required onchange="financialManager.updateCategories()">
+                                <option value="">Selecione o tipo</option>
+                                <option value="income">Receita</option>
+                                <option value="expense">Despesa</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Categoria</label>
+                            <select id="category" required onchange="financialManager.togglePlayerField()">
+                                <option value="">Selecione a categoria</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label><i class="fas fa-file-alt"></i> Descrição</label>
@@ -143,29 +164,13 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="fas fa-tag"></i> Tipo</label>
-                            <select id="type" required onchange="updateCategories()">
-                                <option value="income">Receita</option>
-                                <option value="expense">Despesa</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label><i class="fas fa-calendar"></i> Data</label>
-                            <input type="date" id="date" required>
-                        </div>
-                    </div>
-
                     <div class="form-group">
-                        <label><i class="fas fa-folder"></i> Categoria</label>
-                        <select id="category" required>
-                            <!-- Categorias serão preenchidas via JavaScript -->
-                        </select>
+                        <label><i class="fas fa-calendar"></i> Data</label>
+                        <input type="date" id="date" required>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn-secondary" onclick="closeTransactionModal()">
+                        <button type="button" class="btn-secondary" onclick="financialManager.closeModal()">
                             Cancelar
                         </button>
                         <button type="submit" class="btn-primary">
@@ -179,10 +184,14 @@
     </main>
 
     <!-- Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <!-- App Scripts -->
     <script src="../js/config.js"></script>
+    <script src="../js/menu.js"></script>
     <script src="../js/financial.js"></script>
 </body>
 </html>

@@ -6,13 +6,18 @@ class AuthSystem {
     }
 
     // Login com Google
-    async loginWithGoogle() {
+    async signInWithGoogle() {
         try {
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+            
             const result = await this.auth.signInWithPopup(provider);
             
             if (result.user) {
                 await this.createTeamIfNotExists(result.user);
+                window.location.href = 'pages/dashboard.html';
                 return true;
             }
             return false;
@@ -66,8 +71,13 @@ class AuthSystem {
     }
 }
 
-// Exportar instância
+// Criar instância
 const authSystem = new AuthSystem();
+
+// Função global de login
+window.signInWithGoogle = function() {
+    authSystem.signInWithGoogle();
+};
 
 // Verificar estado de autenticação
 firebase.auth().onAuthStateChanged((user) => {

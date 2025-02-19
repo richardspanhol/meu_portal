@@ -17,7 +17,7 @@
                 
                 <div class="login-options">
                     <p class="google-text">Entre ou cadastre-se com sua conta Google</p>
-                    <button id="googleLogin" class="btn-google" onclick="signInWithGoogle()">
+                    <button id="googleLogin" class="btn-google" onclick="handleGoogleLogin()">
                         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
                         Continuar com Google
                     </button>
@@ -35,11 +35,59 @@
     </footer>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    
+    <!-- App Scripts -->
     <script src="js/config.js"></script>
-    <script src="js/database.js"></script>
-    <script src="js/auth.js"></script>
+    <script>
+        // Função de login diretamente na página
+        async function handleGoogleLogin() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.setCustomParameters({
+                    prompt: 'select_account'
+                });
+                
+                const result = await firebase.auth().signInWithPopup(provider);
+                
+                if (result.user) {
+                    // Criar documento do time se não existir
+                    const teamRef = firebase.firestore().collection('teams').doc(result.user.uid);
+                    const doc = await teamRef.get();
+
+                    if (!doc.exists) {
+                        await teamRef.set({
+                            name: 'Meu Time',
+                            createdAt: new Date(),
+                            owner: result.user.uid,
+                            email: result.user.email,
+                            sport: 'futsal',
+                            logoUrl: null,
+                            settings: {
+                                emailNotifications: true,
+                                matchReminders: true,
+                                publicProfile: false
+                            }
+                        });
+                    }
+                    
+                    window.location.href = 'pages/dashboard.html';
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                alert('Erro ao fazer login: ' + error.message);
+            }
+        }
+
+        // Verificar autenticação
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = 'pages/dashboard.html';
+            }
+        });
+    </script>
 </body>
 </html>

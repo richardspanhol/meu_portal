@@ -65,7 +65,7 @@
                 <h1>Jogadores</h1>
                 <p>Gerencie o elenco do seu time</p>
             </div>
-            <button class="btn-primary" onclick="openPlayerModal()">
+            <button class="btn-primary" onclick="playersManager.openModal()">
                 <i class="fas fa-plus"></i>
                 Adicionar Jogador
             </button>
@@ -89,60 +89,77 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 id="modalTitle">Adicionar Jogador</h2>
-                    <button class="close-modal" onclick="closePlayerModal()">
+                    <button class="close-modal" onclick="playersManager.closeModal()">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
+                <div class="modal-body">
+                    <form id="playerForm" class="player-form">
+                        <div class="photo-upload-container">
+                            <label for="playerPhoto" class="photo-preview">
+                                <img id="photoPreview" src="../assets/default-player.png" alt="Foto do Jogador">
+                                <div class="photo-overlay">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Alterar foto</span>
+                                </div>
+                            </label>
+                            <input type="file" id="playerPhoto" accept="image/*" hidden>
+                        </div>
 
-                <form id="playerForm" class="player-form">
-                    <div class="photo-upload-container">
-                        <label for="playerPhoto" class="photo-preview">
-                            <img id="photoPreview" src="../assets/default-player.png" alt="Foto do Jogador">
-                            <div class="photo-overlay">
-                                <i class="fas fa-camera"></i>
-                                <span>Alterar foto</span>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-user"></i> Nome</label>
+                                <input type="text" id="playerName" required>
                             </div>
-                        </label>
-                        <input type="file" id="playerPhoto" accept="image/*" hidden>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label><i class="fas fa-user"></i> Nome</label>
-                            <input type="text" id="playerName" required>
+                            <div class="form-group">
+                                <label><i class="fas fa-tshirt"></i> Número</label>
+                                <input type="number" id="playerNumber" min="0" max="99" required>
+                            </div>
                         </div>
+
                         <div class="form-group">
-                            <label><i class="fas fa-tshirt"></i> Número</label>
-                            <input type="number" id="playerNumber" min="0" max="99" required>
+                            <label><i class="fas fa-running"></i> Posição</label>
+                            <select id="playerPosition" required>
+                                <!-- Opções serão preenchidas via JavaScript -->
+                            </select>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label><i class="fas fa-running"></i> Posição</label>
-                        <select id="playerPosition" required>
-                            <!-- Opções serão preenchidas via JavaScript -->
-                        </select>
-                    </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar"></i> Data de Nascimento</label>
+                                <input type="date" id="playerBirthDate">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-calendar-plus"></i> Data de Entrada</label>
+                                <input type="date" id="playerJoinDate">
+                            </div>
+                        </div>
 
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary" onclick="closePlayerModal()">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save"></i>
-                            Salvar
-                        </button>
-                    </div>
-                </form>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="playersManager.closeModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i>
+                                Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </main>
 
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+    <!-- App Scripts -->
     <script src="../js/config.js"></script>
+    <script src="../js/menu.js"></script>
     <script src="../js/players.js"></script>
 </body>
 </html>
